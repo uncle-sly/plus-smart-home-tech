@@ -14,9 +14,9 @@ public class SensorEventMapper {
 
         switch (sensorEvent) {
             case ClimateSensorEvent event -> payload = ClimateSensorAvro.newBuilder()
-                    .setTemperatureC(event.getTemperature_c())
+                    .setTemperatureC(event.getTemperatureC())
                     .setHumidity(event.getHumidity())
-                    .setCo2Level(event.getCo2_level())
+                    .setCo2Level(event.getCo2Level())
                     .build();
 
             case LightSensorEvent event -> payload = LightSensorAvro.newBuilder()
@@ -25,7 +25,7 @@ public class SensorEventMapper {
                     .build();
 
             case MotionSensorEvent event -> payload = MotionSensorAvro.newBuilder()
-                    .setLinkQuality(event.getLink_quality())
+                    .setLinkQuality(event.getLinkQuality())
                     .setMotion(event.isMotion())
                     .setVoltage(event.getVoltage())
                     .build();
@@ -35,8 +35,8 @@ public class SensorEventMapper {
                     .build();
 
             case TemperatureSensorEvent event -> payload = TemperatureSensorAvro.newBuilder()
-                    .setTemperatureC(event.getTemperature_c())
-                    .setTemperatureF(event.getTemperature_f())
+                    .setTemperatureC(event.getTemperatureC())
+                    .setTemperatureF(event.getTemperatureF())
                     .build();
 
             default -> throw new IllegalStateException("Unexpected Event Value: " + sensorEvent);

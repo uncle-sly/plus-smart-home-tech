@@ -48,7 +48,7 @@ public class HubEventMapper {
     public static List<DeviceActionAvro> toDeviceActionAvros(List<DeviceAction> actions) {
         return actions.stream()
                 .map(action -> DeviceActionAvro.newBuilder()
-                        .setSensorId(action.getSensor_id())
+                        .setSensorId(action.getSensorId())
                         .setType(ActionTypeAvro.valueOf(action.getType().name()))
                         .setValue(action.getValue())
                         .build())
@@ -58,7 +58,7 @@ public class HubEventMapper {
     public static List<ScenarioConditionAvro> toScenarioConditionAvros(List<ScenarioCondition> conditions) {
         return conditions.stream()
                 .map(condition -> ScenarioConditionAvro.newBuilder()
-                        .setSensorId(condition.getSensor_id())
+                        .setSensorId(condition.getSensorId())
                         .setType(ConditionTypeAvro.valueOf(condition.getType().name()))
                         .setOperation(ConditionOperationAvro.valueOf(condition.getOperation().name()))
                         .setValue(condition.getValue())

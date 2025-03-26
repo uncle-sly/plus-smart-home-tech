@@ -4,7 +4,7 @@ import lombok.Data;
 
 @Data
 public class ScenarioCondition {
-    private String sensor_id;
+    private String sensorId;
     private ConditionType type;
     private ConditionOperationType operation;
     private int value;

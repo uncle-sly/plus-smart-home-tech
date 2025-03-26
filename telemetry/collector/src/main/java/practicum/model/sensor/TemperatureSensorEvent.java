@@ -11,9 +11,9 @@ import lombok.ToString;
 public class TemperatureSensorEvent extends SensorEvent {
 
     @NotNull
-    private int temperature_c;
+    private int temperatureC;
     @NotNull
-    private int temperature_f;
+    private int temperatureF;
 
     @Override
     public SensorEventType getType() {

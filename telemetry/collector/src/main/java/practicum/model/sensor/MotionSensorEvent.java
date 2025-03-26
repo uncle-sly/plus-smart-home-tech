@@ -11,7 +11,7 @@ import lombok.ToString;
 public class MotionSensorEvent extends SensorEvent {
 
     @NotNull
-    private int link_quality;
+    private int linkQuality;
 
     private boolean motion;
 
