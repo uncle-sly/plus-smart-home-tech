@@ -30,7 +30,7 @@ public class HubEventMapper {
             case SCENARIO_REMOVED -> ScenarioRemovedEventAvro.newBuilder()
                     .setName(hubEvent.getScenarioRemoved().getName())
                     .build();
-            default -> throw new IllegalArgumentException("Unsupported HubEvent type: " + hubEvent.getPayloadCase());
+            default -> throw new IllegalArgumentException("Unsupported HubEventProto type: " + hubEvent.getPayloadCase());
         };
 
         return HubEventAvro.newBuilder()

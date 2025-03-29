@@ -2,7 +2,6 @@ package practicum.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import practicum.model.sensor.*;
 import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
@@ -34,7 +33,7 @@ public class SensorEventMapper {
                     .setTemperatureC(sensorEvent.getTemperatureSensorEvent().getTemperatureC())
                     .setTemperatureF(sensorEvent.getTemperatureSensorEvent().getTemperatureF())
                     .build();
-            default -> throw new IllegalArgumentException("Unsupported SensorEvent type: " + sensorEvent.getPayloadCase());
+            default -> throw new IllegalArgumentException("Unsupported SensorEventProto type: " + sensorEvent.getPayloadCase());
         };
 
         return SensorEventAvro.newBuilder()
