@@ -2,52 +2,45 @@ package practicum.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import practicum.model.sensor.*;
+import ru.yandex.practicum.grpc.telemetry.event.SensorEventProto;
 import ru.yandex.practicum.kafka.telemetry.event.*;
+
+import java.time.Instant;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class SensorEventMapper {
 
-    public static SensorEventAvro toSensorEventAvro(SensorEvent sensorEvent) {
-
-        Object payload;
-
-        switch (sensorEvent) {
-            case ClimateSensorEvent event -> payload = ClimateSensorAvro.newBuilder()
-                    .setTemperatureC(event.getTemperatureC())
-                    .setHumidity(event.getHumidity())
-                    .setCo2Level(event.getCo2Level())
+    public static SensorEventAvro toSensorEventAvro(SensorEventProto sensorEvent) {
+        Object payload = switch (sensorEvent.getPayloadCase()) {
+            case CLIMATE_SENSOR_EVENT -> ClimateSensorAvro.newBuilder()
+                    .setTemperatureC(sensorEvent.getClimateSensorEvent().getTemperatureC())
+                    .setHumidity(sensorEvent.getClimateSensorEvent().getHumidity())
+                    .setCo2Level(sensorEvent.getClimateSensorEvent().getCo2Level())
                     .build();
-
-            case LightSensorEvent event -> payload = LightSensorAvro.newBuilder()
-                    .setLinkQuality(event.getLinkQuality())
-                    .setLuminosity(event.getLuminosity())
+            case LIGHT_SENSOR_EVENT -> LightSensorAvro.newBuilder()
+                    .setLinkQuality(sensorEvent.getLightSensorEvent().getLinkQuality())
+                    .setLuminosity(sensorEvent.getLightSensorEvent().getLuminosity())
                     .build();
-
-            case MotionSensorEvent event -> payload = MotionSensorAvro.newBuilder()
-                    .setLinkQuality(event.getLinkQuality())
-                    .setMotion(event.isMotion())
-                    .setVoltage(event.getVoltage())
+            case MOTION_SENSOR_EVENT -> MotionSensorAvro.newBuilder()
+                    .setLinkQuality(sensorEvent.getMotionSensorEvent().getLinkQuality())
+                    .setMotion(sensorEvent.getMotionSensorEvent().getMotion())
+                    .setVoltage(sensorEvent.getMotionSensorEvent().getVoltage())
                     .build();
-
-            case SwitchSensorEvent event -> payload = SwitchSensorAvro.newBuilder()
-                    .setState(event.isState())
+            case SWITCH_SENSOR_EVENT -> SwitchSensorAvro.newBuilder()
+                    .setState(sensorEvent.getSwitchSensorEvent().getState())
                     .build();
-
-            case TemperatureSensorEvent event -> payload = TemperatureSensorAvro.newBuilder()
-                    .setTemperatureC(event.getTemperatureC())
-                    .setTemperatureF(event.getTemperatureF())
+            case TEMPERATURE_SENSOR_EVENT -> TemperatureSensorAvro.newBuilder()
+                    .setTemperatureC(sensorEvent.getTemperatureSensorEvent().getTemperatureC())
+                    .setTemperatureF(sensorEvent.getTemperatureSensorEvent().getTemperatureF())
                     .build();
-
-            default -> throw new IllegalStateException("Unexpected Event Value: " + sensorEvent);
-        }
+            default -> throw new IllegalArgumentException("Unsupported SensorEventProto type: " + sensorEvent.getPayloadCase());
+        };
 
         return SensorEventAvro.newBuilder()
                 .setId(sensorEvent.getId())
                 .setHubId(sensorEvent.getHubId())
-                .setTimestamp(sensorEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(sensorEvent.getTimestamp().getSeconds(), sensorEvent.getTimestamp().getNanos()))
                 .setPayload(payload)
                 .build();
     }
-
 }
