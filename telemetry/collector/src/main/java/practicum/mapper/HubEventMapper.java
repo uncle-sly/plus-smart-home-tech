@@ -2,50 +2,45 @@ package practicum.mapper;
 
 import lombok.AccessLevel;
 import lombok.NoArgsConstructor;
-import practicum.model.hub.*;
+import ru.yandex.practicum.grpc.telemetry.event.DeviceActionProto;
+import ru.yandex.practicum.grpc.telemetry.event.HubEventProto;
+import ru.yandex.practicum.grpc.telemetry.event.ScenarioConditionProto;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+import java.time.Instant;
 import java.util.List;
 
 @NoArgsConstructor(access = AccessLevel.PRIVATE)
 public class HubEventMapper {
 
-    public static HubEventAvro toHubEventAvro(HubEvent hubEvent) {
-
-        Object payload;
-
-        switch (hubEvent) {
-
-            case DeviceAddedEvent event -> payload = DeviceAddedEventAvro.newBuilder()
-                    .setId(event.getId())
-                    .setType(DeviceTypeAvro.valueOf(event.getDeviceType().name()))
+    public static HubEventAvro toHubEventAvro(HubEventProto hubEvent) {
+        Object payload = switch (hubEvent.getPayloadCase()) {
+            case DEVICE_ADDED -> DeviceAddedEventAvro.newBuilder()
+                    .setId(hubEvent.getDeviceAdded().getId())
+                    .setType(DeviceTypeAvro.valueOf(hubEvent.getDeviceAdded().getType().name()))
                     .build();
-
-            case DeviceRemovedEvent event -> payload = DeviceRemovedEventAvro.newBuilder()
-                    .setId(event.getId())
+            case DEVICE_REMOVED -> DeviceRemovedEventAvro.newBuilder()
+                    .setId(hubEvent.getDeviceRemoved().getId())
                     .build();
-
-            case ScenarioAddedEvent event -> payload = ScenarioAddedEventAvro.newBuilder()
-                    .setName(event.getName())
-                    .setActions(toDeviceActionAvros(event.getActions()))
-                    .setConditions(toScenarioConditionAvros(event.getConditions()))
+            case SCENARIO_ADDED -> ScenarioAddedEventAvro.newBuilder()
+                    .setName(hubEvent.getScenarioAdded().getName())
+                    .setConditions(toScenarioConditionAvros(hubEvent.getScenarioAdded().getConditionList()))
+                    .setActions(toDeviceActionAvros(hubEvent.getScenarioAdded().getActionList()))
                     .build();
-
-            case ScenarioRemovedEvent event -> payload = ScenarioRemovedEventAvro.newBuilder()
-                    .setName(event.getName())
+            case SCENARIO_REMOVED -> ScenarioRemovedEventAvro.newBuilder()
+                    .setName(hubEvent.getScenarioRemoved().getName())
                     .build();
-
-            default -> throw new IllegalStateException("Unexpected Hub Value: " + hubEvent);
-        }
+            default -> throw new IllegalArgumentException("Unsupported HubEvent type: " + hubEvent.getPayloadCase());
+        };
 
         return HubEventAvro.newBuilder()
                 .setHubId(hubEvent.getHubId())
-                .setTimestamp(hubEvent.getTimestamp())
+                .setTimestamp(Instant.ofEpochSecond(hubEvent.getTimestamp().getSeconds(), hubEvent.getTimestamp().getNanos()))
                 .setPayload(payload)
                 .build();
     }
 
-    public static List<DeviceActionAvro> toDeviceActionAvros(List<DeviceAction> actions) {
+    public static List<DeviceActionAvro> toDeviceActionAvros(List<DeviceActionProto> actions) {
         return actions.stream()
                 .map(action -> DeviceActionAvro.newBuilder()
                         .setSensorId(action.getSensorId())
@@ -55,15 +50,22 @@ public class HubEventMapper {
                 .toList();
     }
 
-    public static List<ScenarioConditionAvro> toScenarioConditionAvros(List<ScenarioCondition> conditions) {
+    public static List<ScenarioConditionAvro> toScenarioConditionAvros(List<ScenarioConditionProto> conditions) {
         return conditions.stream()
-                .map(condition -> ScenarioConditionAvro.newBuilder()
-                        .setSensorId(condition.getSensorId())
-                        .setType(ConditionTypeAvro.valueOf(condition.getType().name()))
-                        .setOperation(ConditionOperationAvro.valueOf(condition.getOperation().name()))
-                        .setValue(condition.getValue())
-                        .build())
+                .map(condition -> {
+                    Object value = switch (condition.getValueCase()) {
+                        case INT_VALUE -> condition.getIntValue();
+                        case BOOL_VALUE -> condition.getBoolValue();
+                        default -> null;
+                    };
+
+                    return ScenarioConditionAvro.newBuilder()
+                            .setSensorId(condition.getSensorId())
+                            .setValue(value)
+                            .setOperation(ConditionOperationAvro.valueOf(condition.getOperation().name()))
+                            .setType(ConditionTypeAvro.valueOf(condition.getType().name()))
+                            .build();
+                })
                 .toList();
     }
-
 }
