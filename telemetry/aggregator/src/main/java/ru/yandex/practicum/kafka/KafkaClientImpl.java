@@ -12,8 +12,9 @@ import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-import practicum.serialization.GeneralAvroSerializer;
+//import practicum.serialization.GeneralAvroSerializer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
+import serialization.GeneralAvroSerializer;
 
 import java.time.Duration;
 import java.util.Properties;
