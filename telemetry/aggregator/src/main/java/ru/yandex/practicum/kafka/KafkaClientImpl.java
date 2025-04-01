@@ -7,12 +7,10 @@ import org.apache.kafka.clients.consumer.ConsumerConfig;
 import org.apache.kafka.clients.consumer.KafkaConsumer;
 import org.apache.kafka.clients.producer.Producer;
 import org.apache.kafka.clients.producer.ProducerConfig;
-import org.apache.kafka.clients.producer.ProducerRecord;
 import org.apache.kafka.common.serialization.StringDeserializer;
 import org.apache.kafka.common.serialization.StringSerializer;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
-//import practicum.serialization.GeneralAvroSerializer;
 import ru.yandex.practicum.kafka.telemetry.event.SensorEventAvro;
 import serialization.GeneralAvroSerializer;
 
@@ -41,11 +39,6 @@ public class KafkaClientImpl implements KafkaClient {
         }
         return producer;
     }
-
-//    @Override
-//    public ProducerRecord<String, SpecificRecordBase> getProducerRecord(String topic, SpecificRecordBase record) {
-//        return new ProducerRecord<>(topic, record);
-//    }
 
     private void initProducer() {
         Properties config = new Properties();
