@@ -12,7 +12,7 @@ import org.springframework.context.annotation.ComponentScan;
  */
 @SpringBootApplication
 @ConfigurationPropertiesScan
-@ComponentScan("ru.yandex.practicum.kafka")
+@ComponentScan("ru.yandex.practicum")
 public class Aggregator {
 
     public static void main(String[] args) {
