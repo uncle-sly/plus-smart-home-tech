@@ -19,6 +19,8 @@ import java.util.List;
 @Component
 public class SnapshotProcessor {
 
+    private static final Duration POLL_TIMEOUT = Duration.ofMillis(500);
+
     private final String snapshotTopic;
     private final KafkaClient kafkaClient;
     private final SnapshotsEventHandler snapshotsEventHandler;
@@ -38,7 +40,7 @@ public class SnapshotProcessor {
             consumer.subscribe(List.of(snapshotTopic));
 
             while (true) {
-                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(Duration.ofMillis(1000));
+                ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(POLL_TIMEOUT);
                 for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
                     log.info("topic = {}, partition = {}, offset = {}, record = {}",
                             record.topic(), record.partition(), record.offset(), record.value());
