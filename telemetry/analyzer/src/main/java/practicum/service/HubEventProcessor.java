@@ -22,7 +22,7 @@ import java.util.stream.Collectors;
 @Component
 public class HubEventProcessor implements Runnable {
 
-        private static final Duration POLL_TIMEOUT = Duration.ofMillis(500);
+        private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
 
         private final String hubTopic;
         private final KafkaClient kafkaClient;
@@ -66,7 +66,7 @@ public class HubEventProcessor implements Runnable {
                                                 log.info("Hub событие обработано.");
                                         }
                                 }
-                          consumer.commitAsync();
+                          consumer.commitSync();
                         }
 
                 } catch (WakeupException ignored) {

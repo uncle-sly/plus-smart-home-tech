@@ -19,7 +19,7 @@ import java.util.List;
 @Component
 public class SnapshotProcessor {
 
-    private static final Duration POLL_TIMEOUT = Duration.ofMillis(500);
+    private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
 
     private final String snapshotTopic;
     private final KafkaClient kafkaClient;
@@ -47,7 +47,7 @@ public class SnapshotProcessor {
                     snapshotsEventHandler.handle(record.value());
                     log.info("Hub событие обработано.");
                 }
-                consumer.commitAsync();
+                consumer.commitSync();
             }
 
 
