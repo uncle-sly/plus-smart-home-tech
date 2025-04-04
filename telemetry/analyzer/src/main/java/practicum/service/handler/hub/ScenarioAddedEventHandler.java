@@ -55,7 +55,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         return ScenarioAddedEventAvro.class.getName();
     }
 
-    private Map<String, Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
+/*    private Map<String, Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
         validateSensorsExist(conditions.stream().map(ScenarioConditionAvro::getSensorId).toList(), hubId);
 
         return conditions.stream().collect(Collectors.toMap(
@@ -66,8 +66,22 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                         .value(toValue(condition.getValue()))
                         .build()
         ));
-    }
+    }*/
+private List<Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
+    validateSensorsExist(conditions.stream().map(ScenarioConditionAvro::getSensorId).toList(), hubId);
 
+    return conditions.stream().map(condition ->
+            Condition.builder()
+                    .type(condition.getType())
+                    .operation(condition.getOperation())
+                    .value(toValue(condition.getValue()))
+                    .build()
+    ).toList();
+}
+
+
+
+/*
     private Map<String, Action> toActions(List<DeviceActionAvro> actions, String hubId) {
         validateSensorsExist(actions.stream().map(DeviceActionAvro::getSensorId).toList(), hubId);
 
@@ -79,6 +93,19 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                         .build()
         ));
     }
+*/
+private List<Action> toActions(List<DeviceActionAvro> actions, String hubId) {
+    validateSensorsExist(actions.stream().map(DeviceActionAvro::getSensorId).toList(), hubId);
+
+    return actions.stream().map(action ->
+            Action.builder()
+                    .type(action.getType())
+                    .value(action.getValue() == null ? 0 : action.getValue())
+                    .build()
+    ).toList();
+}
+
+
 
     private void validateSensorsExist(List<String> sensorIds, String hubId) {
         if (!sensorRepository.existsByIdInAndHubId(sensorIds, hubId)) {

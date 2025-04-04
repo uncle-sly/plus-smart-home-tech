@@ -10,7 +10,9 @@ import practicum.repository.ScenarioRepository;
 import practicum.service.HubActionProducer;
 import ru.yandex.practicum.kafka.telemetry.event.*;
 
+import java.util.List;
 import java.util.Map;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -19,6 +21,21 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
 
     private final ScenarioRepository scenarioRepository;
     private final HubActionProducer hubActionProducer;
+
+/*    public void handle(SensorsSnapshotAvro snapshot) {
+
+        String hubId = snapshot.getHubId();
+        log.info("Обрабатываем снапшот от хаба: {}", hubId);
+
+        if (snapshot.getSensorsState() == null) {
+            log.warn("Состояние сенсоров отсутствует в снапшоте от хаба: {}", hubId);
+            return;
+        }
+
+        scenarioRepository.findByHubId(hubId).stream()
+                .filter(scenario -> isReady(scenario, snapshot))
+                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions()));
+    }*/
 
     public void handle(SensorsSnapshotAvro snapshot) {
 
@@ -32,10 +49,13 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
 
         scenarioRepository.findByHubId(hubId).stream()
                 .filter(scenario -> isReady(scenario, snapshot))
-                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions()));
+                .forEach(scenario -> runActions(hubId, scenario.getName(), toActionMap(scenario.getActions())));
     }
 
-    private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
+
+
+
+/*    private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
         log.info("Условия: {}", scenario.getConditions());
 
         return scenario.getConditions().entrySet().stream()
@@ -47,7 +67,21 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
 //            }
 //        }
 //        return true;
+    }*/
+    private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
+        log.info("Условия: {}", scenario.getConditions());
+
+        return scenario.getConditions().stream()
+                .allMatch(condition -> checkCondition(condition.getSensor().getId(), condition, snapshot));
     }
+
+    private Map<String, Action> toActionMap(List<Action> actions) {
+        return actions.stream().collect(Collectors.toMap(
+                action -> action.getSensor().getId(),
+                action -> action
+        ));
+    }
+
 
     private boolean checkCondition(String sensorId, Condition condition, SensorsSnapshotAvro snapshot) {
         SensorStateAvro sensorState = snapshot.getSensorsState().get(sensorId);

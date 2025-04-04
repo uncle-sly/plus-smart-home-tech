@@ -5,16 +5,46 @@ import lombok.*;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionOperationAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ConditionTypeAvro;
 
+import java.util.List;
+
+//@Entity
+//@Table(name = "conditions")
+//@Getter
+//@Setter
+//@ToString
+//@NoArgsConstructor
+//@AllArgsConstructor
+//@Builder
+//public class Condition {
+//
+//    @Id
+//    @GeneratedValue(strategy = GenerationType.IDENTITY)
+//    private Long id;
+//
+//    @Enumerated(EnumType.STRING)
+//    private ConditionTypeAvro type;
+//
+//
+//    @Enumerated(EnumType.STRING)
+//    private ConditionOperationAvro operation;
+//
+//    private Integer value;
+//
+//}
+
 @Entity
 @Table(name = "conditions")
 @Getter
 @Setter
 @ToString
+@SecondaryTable(
+        name = "scenario_conditions",
+        pkJoinColumns = @PrimaryKeyJoinColumn(name = "condition_id")
+)
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 public class Condition {
-
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
@@ -22,10 +52,15 @@ public class Condition {
     @Enumerated(EnumType.STRING)
     private ConditionTypeAvro type;
 
-
     @Enumerated(EnumType.STRING)
     private ConditionOperationAvro operation;
 
-    private Integer value;
+    private int value;
 
+    @ManyToOne
+    @JoinColumn(name = "sensor_id")
+    private Sensor sensor;
+
+    @ManyToMany(mappedBy = "conditions")
+    private List<Scenario> scenarios;
 }
