@@ -38,7 +38,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
 
         log.info("Добавлен сценарий: {}", payload);
 
-        if (scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName()).isEmpty()) {
+//        if (scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName()).isEmpty()) {
             Scenario scenario = Scenario.builder()
                     .hubId(hubEventAvro.getHubId())
                     .name(payload.getName())
@@ -47,7 +47,8 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                     .build();
             scenarioRepository.save(scenario);
             log.info("Сценарий '{}' успешно сохранен", payload.getName());
-        }
+//        }
+
     }
 
     @Override
