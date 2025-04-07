@@ -10,7 +10,7 @@ import ru.yandex.practicum.kafka.telemetry.event.HubEventAvro;
 @Component
 @RequiredArgsConstructor
 @Slf4j
-public class DeviceRemovedEventHandler implements HubEventHandler{
+public class DeviceRemovedEventHandler implements HubEventHandler {
 
     private final SensorRepository sensorRepository;
 
@@ -21,10 +21,6 @@ public class DeviceRemovedEventHandler implements HubEventHandler{
             log.warn("Получено событие неизвестного типа: {}", hubEventAvro.getPayload().getClass().getName());
             return;
         }
-//        DeviceRemovedEventAvro payload = (DeviceRemovedEventAvro) hubEventAvro.getPayload();
-//        log.info("Устройство удалено: {}", payload);
-//        sensorRepository.findByIdAndHubId(payload.getId(), hubEventAvro.getHubId())
-//                .ifPresent(sensorRepository::delete);
 
         sensorRepository.findByIdAndHubId(payload.getId(), hubEventAvro.getHubId())
                 .ifPresentOrElse(sensor -> {
@@ -37,5 +33,4 @@ public class DeviceRemovedEventHandler implements HubEventHandler{
     public String getType() {
         return DeviceRemovedEventAvro.class.getName();
     }
-
 }

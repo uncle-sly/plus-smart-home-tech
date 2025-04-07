@@ -18,6 +18,7 @@ import java.util.Set;
 import java.util.function.Function;
 import java.util.stream.Collectors;
 
+
 @Slf4j
 @Component
 public class HubEventProcessor implements Runnable {
@@ -28,16 +29,6 @@ public class HubEventProcessor implements Runnable {
         private final KafkaClient kafkaClient;
         private final Map<String, HubEventHandler> handlerMap;
 
-//        public HubEventProcessor(KafkaClient kafkaClient, Set<HubEventHandler> hubEventHandlers,
-//                                 @Value("${kafka.topic.hub}") String hubTopic) {
-//                this.hubTopic = hubTopic;
-//                this.kafkaClient = kafkaClient;
-//                this.handlerMap = hubEventHandlers.stream()
-//                        .collect(Collectors.toMap(
-//                                HubEventHandler::getType,
-//                                Function.identity()
-//                        ));
-//        }
         public HubEventProcessor(KafkaClient kafkaClient, Set<HubEventHandler> hubEventHandlers,
                                  @Value("${kafka.topic.hub}") String hubTopic) {
                 this.hubTopic = hubTopic;
@@ -81,4 +72,5 @@ public class HubEventProcessor implements Runnable {
                         }
                 }
         }
+
 }

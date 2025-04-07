@@ -1,12 +1,14 @@
 package practicum.service.handler.hub;
 
 
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Component;
 import practicum.model.Action;
 import practicum.model.Condition;
 import practicum.model.Scenario;
+import practicum.model.Sensor;
 import practicum.repository.ScenarioRepository;
 import practicum.repository.SensorRepository;
 import ru.yandex.practicum.kafka.telemetry.event.DeviceActionAvro;
@@ -15,9 +17,7 @@ import ru.yandex.practicum.kafka.telemetry.event.ScenarioAddedEventAvro;
 import ru.yandex.practicum.kafka.telemetry.event.ScenarioConditionAvro;
 
 import java.util.List;
-import java.util.Map;
 import java.util.NoSuchElementException;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -28,17 +28,17 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
     private final SensorRepository sensorRepository;
 
     @Override
+    @Transactional
     public void handle(HubEventAvro hubEventAvro) {
-//        ScenarioAddedEventAvro payload = (ScenarioAddedEventAvro) hubEventAvro.getPayload();
 
         if (!(hubEventAvro.getPayload() instanceof ScenarioAddedEventAvro payload)) {
             log.warn("Получено событие неизвестного типа: {}", hubEventAvro.getPayload().getClass().getName());
             return;
         }
 
-        log.info("Добавлен сценарий: {}", payload);
+        log.info("Добавление сценария: {}", payload);
 
-//        if (scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName()).isEmpty()) {
+        if (scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName()).isEmpty()) {
             Scenario scenario = Scenario.builder()
                     .hubId(hubEventAvro.getHubId())
                     .name(payload.getName())
@@ -47,7 +47,7 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
                     .build();
             scenarioRepository.save(scenario);
             log.info("Сценарий '{}' успешно сохранен", payload.getName());
-//        }
+        }
 
     }
 
@@ -56,57 +56,38 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
         return ScenarioAddedEventAvro.class.getName();
     }
 
-/*    private Map<String, Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
+    private List<Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
         validateSensorsExist(conditions.stream().map(ScenarioConditionAvro::getSensorId).toList(), hubId);
 
-        return conditions.stream().collect(Collectors.toMap(
-                ScenarioConditionAvro::getSensorId,
-                condition -> Condition.builder()
-                        .type(condition.getType())
-                        .operation(condition.getOperation())
-                        .value(toValue(condition.getValue()))
-                        .build()
-        ));
-    }*/
-private List<Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
-    validateSensorsExist(conditions.stream().map(ScenarioConditionAvro::getSensorId).toList(), hubId);
+        return conditions.stream().map(condition ->
+        {
+            Sensor sensor = sensorRepository.findById(condition.getSensorId())
+                    .orElseThrow(() -> new IllegalArgumentException("Sensor not found for id: " + condition.getSensorId()));
 
-    return conditions.stream().map(condition ->
-            Condition.builder()
+            return Condition.builder()
+                    .sensor(sensor)
                     .type(condition.getType())
                     .operation(condition.getOperation())
                     .value(toValue(condition.getValue()))
-                    .build()
-    ).toList();
-}
+                    .build();
+        }).toList();
+    }
 
-
-
-/*
-    private Map<String, Action> toActions(List<DeviceActionAvro> actions, String hubId) {
+    private List<Action> toActions(List<DeviceActionAvro> actions, String hubId) {
         validateSensorsExist(actions.stream().map(DeviceActionAvro::getSensorId).toList(), hubId);
 
-        return actions.stream().collect(Collectors.toMap(
-                DeviceActionAvro::getSensorId,
-                action -> Action.builder()
-                        .type(action.getType())
-                        .value(action.getValue() == null ? 0 : action.getValue())
-                        .build()
-        ));
-    }
-*/
-private List<Action> toActions(List<DeviceActionAvro> actions, String hubId) {
-    validateSensorsExist(actions.stream().map(DeviceActionAvro::getSensorId).toList(), hubId);
+        return actions.stream().map(action ->
+        {
+            Sensor sensor = sensorRepository.findById(action.getSensorId())
+                    .orElseThrow(() -> new IllegalArgumentException("Sensor not found for id: " + action.getSensorId()));
 
-    return actions.stream().map(action ->
-            Action.builder()
+            return Action.builder()
+                    .sensor(sensor)
                     .type(action.getType())
                     .value(action.getValue() == null ? 0 : action.getValue())
-                    .build()
-    ).toList();
-}
-
-
+                    .build();
+        }).toList();
+    }
 
     private void validateSensorsExist(List<String> sensorIds, String hubId) {
         if (!sensorRepository.existsByIdInAndHubId(sensorIds, hubId)) {
@@ -114,54 +95,6 @@ private List<Action> toActions(List<DeviceActionAvro> actions, String hubId) {
             throw new NoSuchElementException("Некоторые элементы не найдены");
         }
     }
-
-//    private Map<String, Condition> toConditions(List<ScenarioConditionAvro> conditions, String hubId) {
-//        List<String> ids = conditions.stream()
-//                .map(ScenarioConditionAvro::getSensorId)
-//                .toList();
-//        if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-//            return conditions.stream()
-//                    .collect(Collectors.toMap(
-//                            ScenarioConditionAvro::getSensorId,
-//                            condition -> Condition.builder()
-//                                    .type(condition.getType())
-//                                    .operation(condition.getOperation())
-//                                    .value(toValue(condition.getValue()))
-//                                    .build()
-//                    ));
-//        } else {
-//            throw new NoSuchElementException("Элемент не найден");
-//        }
-//    }
-//
-//    private Map<String, Action> toActions(List<DeviceActionAvro> actions, String hubId) {
-//        List<String> ids = actions.stream()
-//                .map(DeviceActionAvro::getSensorId)
-//                .toList();
-//        if (sensorRepository.existsByIdInAndHubId(ids, hubId)) {
-//            return actions.stream()
-//                    .collect(Collectors.toMap(
-//                            DeviceActionAvro::getSensorId,
-//                            action -> Action.builder()
-//                                    .type(action.getType())
-//                                    .value(action.getValue() == null ? 0 : action.getValue())
-//                                    .build()
-//                    ));
-//        } else {
-//            throw new NoSuchElementException("Элемент не найден");
-//        }
-//    }
-
-//    private Integer toValue(Object value) {
-//        if (value instanceof Integer) {
-//            return (Integer) value;
-//        } else if (value instanceof Boolean) {
-//            if ((Boolean) value) {
-//                return 1;
-//            }
-//        }
-//        return 0;
-//    }
 
     private Integer toValue(Object value) {
         if (value instanceof Integer intValue) {
@@ -171,7 +104,4 @@ private List<Action> toActions(List<DeviceActionAvro> actions, String hubId) {
         }
         return 0;
     }
-
-
-
 }

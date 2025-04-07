@@ -22,21 +22,6 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
     private final ScenarioRepository scenarioRepository;
     private final HubActionProducer hubActionProducer;
 
-/*    public void handle(SensorsSnapshotAvro snapshot) {
-
-        String hubId = snapshot.getHubId();
-        log.info("Обрабатываем снапшот от хаба: {}", hubId);
-
-        if (snapshot.getSensorsState() == null) {
-            log.warn("Состояние сенсоров отсутствует в снапшоте от хаба: {}", hubId);
-            return;
-        }
-
-        scenarioRepository.findByHubId(hubId).stream()
-                .filter(scenario -> isReady(scenario, snapshot))
-                .forEach(scenario -> runActions(hubId, scenario.getName(), scenario.getActions()));
-    }*/
-
     public void handle(SensorsSnapshotAvro snapshot) {
 
         String hubId = snapshot.getHubId();
@@ -53,21 +38,6 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
     }
 
 
-
-
-/*    private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
-        log.info("Условия: {}", scenario.getConditions());
-
-        return scenario.getConditions().entrySet().stream()
-                .allMatch(entry -> checkCondition(entry.getKey(), entry.getValue(), snapshot));
-
-//        for (String sensorId : scenario.getConditions().keySet()) {
-//            if (!checkCondition(sensorId, scenario.getConditions().get(sensorId), snapshot)) {
-//                return false;
-//            }
-//        }
-//        return true;
-    }*/
     private boolean isReady(Scenario scenario, SensorsSnapshotAvro snapshot) {
         log.info("Условия: {}", scenario.getConditions());
 
@@ -82,7 +52,6 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
         ));
     }
 
-
     private boolean checkCondition(String sensorId, Condition condition, SensorsSnapshotAvro snapshot) {
         SensorStateAvro sensorState = snapshot.getSensorsState().get(sensorId);
         if (sensorState == null || sensorState.getData() == null) {
@@ -90,25 +59,6 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
             return false;
         }
 
-//        if (sensorState == null) {
-//            log.warn("Нет данных для sensorId {} в снапшоте", sensorId);
-//            return false;
-//        }
-
-//        return switch (condition.getType()) {
-//            case MOTION -> calculateCondition(((MotionSensorAvro) sensorState.getData()).getMotion() ? 1 : 0,
-//                    condition.getValue(), condition.getOperation());
-//            case LUMINOSITY -> calculateCondition(((LightSensorAvro) sensorState.getData()).getLuminosity(),
-//                    condition.getValue(), condition.getOperation());
-//            case SWITCH -> calculateCondition(((SwitchSensorAvro) sensorState.getData()).getState() ? 1 : 0,
-//                    condition.getValue(), condition.getOperation());
-//            case TEMPERATURE -> calculateCondition(((ClimateSensorAvro) sensorState.getData()).getTemperatureC(),
-//                    condition.getValue(), condition.getOperation());
-//            case CO2LEVEL -> calculateCondition(((ClimateSensorAvro) sensorState.getData()).getCo2Level(),
-//                    condition.getValue(), condition.getOperation());
-//            case HUMIDITY -> calculateCondition(((ClimateSensorAvro) sensorState.getData()).getHumidity(),
-//                    condition.getValue(), condition.getOperation());
-//        };
         Object data = sensorState.getData();
         int currentValue = switch (condition.getType()) {
             case MOTION -> ((MotionSensorAvro) data).getMotion() ? 1 : 0;
@@ -129,11 +79,6 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
         };
     }
 
-    //    private void runActions(String hubId, String scenarioName, Map<String, Action> actions) {
-    //        actions.keySet()
-    //                .forEach(sensorId -> hubActionProducer.sendAction(hubId, scenarioName, sensorId, actions.get(sensorId)));
-    //    }
-
     private void runActions(String hubId, String scenarioName, Map<String, Action> actions) {
         actions.forEach((sensorId, action) -> {
             hubActionProducer.sendAction(hubId, scenarioName, sensorId, action);
@@ -141,5 +86,4 @@ public class SnapshotsEventHandlerImpl implements SnapshotsEventHandler {
                     hubId, scenarioName, sensorId, action);
         });
     }
-
 }

@@ -17,7 +17,6 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
 
     @Override
     public void handle(HubEventAvro hubEventAvro) {
-//        ScenarioRemovedEventAvro payload = (ScenarioRemovedEventAvro) hubEventAvro.getPayload();
 
         if (!(hubEventAvro.getPayload() instanceof ScenarioRemovedEventAvro payload)) {
             log.warn("Получено событие неизвестного типа: {}", hubEventAvro.getPayload().getClass().getName());
@@ -25,8 +24,6 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
         }
         log.info("Сценарий удален: {}", payload);
 
-//        scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName())
-//                .ifPresent(scenarioRepository::delete);
         scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName())
                 .ifPresentOrElse(scenario -> {
                     scenarioRepository.delete(scenario);
@@ -38,5 +35,4 @@ public class ScenarioRemovedEventHandler implements HubEventHandler {
     public String getType() {
         return ScenarioRemovedEventAvro.class.getName();
     }
-
 }

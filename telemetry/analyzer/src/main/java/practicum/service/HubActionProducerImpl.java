@@ -23,7 +23,6 @@ public class HubActionProducerImpl implements HubActionProducer {
         this.hubRouterClient = hubRouterClient;
     }
 
-
     public void sendAction(String hubId, String scenarioName, String sensorId, Action action) {
 
         if (hubId == null || scenarioName == null || sensorId == null || action == null) {
@@ -38,34 +37,12 @@ public class HubActionProducerImpl implements HubActionProducer {
         log.info("Отправка действия в Hub Router: hubId={}, scenarioName={}, sensorId={}, action={}",
                 hubId, scenarioName, sensorId, action.getType().name());
 
-
-//        DeviceActionRequest deviceActionRequest = DeviceActionRequest.newBuilder()
-//                .setHubId(hubId)
-//                .setScenarioName(scenarioName)
-//                .setAction(DeviceActionProto.newBuilder()
-//                        .setSensorId(sensorId)
-//                        .setType(ActionTypeProto.valueOf(action.getType().name()))
-//                        .setValue(action.getValue())
-//                        .build())
-//                .setTimestamp(Timestamp.newBuilder()
-//                        .setSeconds(now.getEpochSecond())
-//                        .setNanos(now.getNano())
-//                        .build())
-//                .build();
-//        log.info("Отправка действия в Hub Router: {} сенсор: {} действие: {}",
-//                hubId, sensorId, action.getType().name());
-//        try {
-//            hubRouterClient.handleDeviceAction(deviceActionRequest);
-//        } catch (Exception exception) {
-//            log.error(exception.getMessage(), exception);
-//        }
         try {
             hubRouterClient.handleDeviceAction(deviceActionRequest);
         } catch (Exception e) {
             log.error("Ошибка при отправке действия в Hub Router: {}", e.getMessage(), e);
         }
     }
-
 
     private DeviceActionRequest buildDeviceActionRequest(String hubId, String scenarioName, String sensorId,
                                                          Action action, Instant timestamp) {
@@ -92,5 +69,4 @@ public class HubActionProducerImpl implements HubActionProducer {
             return ActionTypeProto.UNRECOGNIZED;
         }
     }
-
 }
