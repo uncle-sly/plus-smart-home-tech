@@ -56,31 +56,35 @@ public class AggregationStarter {
             while (true) {
                 ConsumerRecords<String, SensorEventAvro> consumerRecords = consumer.poll(Duration.ofMillis(100));
                 log.info("Начинаем обработку {} событий из Kafka", consumerRecords.count());
-
-                for (ConsumerRecord<String, SensorEventAvro> consumerRecord : consumerRecords) {
-                    Optional<SensorsSnapshotAvro> snapshot = aggregatorService.updateState(consumerRecord.value());
-                    snapshot.ifPresent(snap -> {
-                        ProducerRecord<String, SpecificRecordBase> producerRecord = new ProducerRecord<>(
-                                snapshotTopic,
-                                null,
-                                snap.getTimestamp().toEpochMilli(),
-                                snap.getHubId(),
-                                snap
-                        );
-                        producer.send(producerRecord);
-                        log.info("Отправили снимок состояния в Kafka для hubId={}", snap.getHubId());
-                    });
+                if (!consumerRecords.isEmpty()) {
+                    try {
+                        for (ConsumerRecord<String, SensorEventAvro> consumerRecord : consumerRecords) {
+                            Optional<SensorsSnapshotAvro> snapshot = aggregatorService.updateState(consumerRecord.value());
+                            snapshot.ifPresent(snap -> {
+                                ProducerRecord<String, SpecificRecordBase> producerRecord = new ProducerRecord<>(
+                                        snapshotTopic,
+                                        null,
+                                        snap.getTimestamp().toEpochMilli(),
+                                        snap.getHubId(),
+                                        snap
+                                );
+                                producer.send(producerRecord);
+                                log.info("Отправили снимок состояния в Kafka для hubId={}", snap.getHubId());
+                            });
+                        }
+                        consumer.commitSync();
+                    } catch (Exception e) {
+                        log.error("Ошибка обработки сообщений из топика {}: {}", sensorTopic, e.getMessage(), e);
+                    }
                 }
-                consumer.commitSync();
             }
-
         } catch (WakeupException ignored) {
             // Ожидаемое исключение при выключении
             // игнорируем - закрываем консьюмер и продюсер в блоке finally
         } catch (Exception e) {
             log.error("Ошибка во время обработки событий от датчиков", e);
         } finally {
-//                 Перед тем, как закрыть продюсер и консьюмер, нужно убедится,
+//                 Перед тем, как закрыть продюсер и консьюмер, нужно убедиться,
 //                 что все сообщения, лежащие в буффере, отправлены и
 //                 все оффсеты обработанных сообщений зафиксированы
 //                 здесь нужно вызвать метод продюсера для сброса данных в буффере

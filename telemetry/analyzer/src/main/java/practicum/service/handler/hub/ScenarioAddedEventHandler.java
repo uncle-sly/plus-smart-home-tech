@@ -38,17 +38,14 @@ public class ScenarioAddedEventHandler implements HubEventHandler {
 
         log.info("Добавление сценария: {}", payload);
 
-        if (scenarioRepository.findByHubIdAndName(hubEventAvro.getHubId(), payload.getName()).isEmpty()) {
-            Scenario scenario = Scenario.builder()
-                    .hubId(hubEventAvro.getHubId())
-                    .name(payload.getName())
-                    .conditions(toConditions(payload.getConditions(), hubEventAvro.getHubId()))
-                    .actions(toActions(payload.getActions(), hubEventAvro.getHubId()))
-                    .build();
-            scenarioRepository.save(scenario);
-            log.info("Сценарий '{}' успешно сохранен", payload.getName());
-        }
-
+        Scenario scenario = Scenario.builder()
+                .hubId(hubEventAvro.getHubId())
+                .name(payload.getName())
+                .conditions(toConditions(payload.getConditions(), hubEventAvro.getHubId()))
+                .actions(toActions(payload.getActions(), hubEventAvro.getHubId()))
+                .build();
+        scenarioRepository.save(scenario);
+        log.info("Сценарий '{}' успешно сохранен", payload.getName());
     }
 
     @Override

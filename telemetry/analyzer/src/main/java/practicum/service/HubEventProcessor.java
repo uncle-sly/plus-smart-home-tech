@@ -23,54 +23,59 @@ import java.util.stream.Collectors;
 @Component
 public class HubEventProcessor implements Runnable {
 
-        private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
+   private static final Duration POLL_TIMEOUT = Duration.ofMillis(1000);
 
-        private final String hubTopic;
-        private final KafkaClient kafkaClient;
-        private final Map<String, HubEventHandler> handlerMap;
+   private final String hubTopic;
+   private final KafkaClient kafkaClient;
+   private final Map<String, HubEventHandler> handlerMap;
 
-        public HubEventProcessor(KafkaClient kafkaClient, Set<HubEventHandler> hubEventHandlers,
-                                 @Value("${kafka.topic.hub}") String hubTopic) {
-                this.hubTopic = hubTopic;
-                this.kafkaClient = kafkaClient;
-                this.handlerMap = hubEventHandlers.stream()
-                        .collect(Collectors.toMap(HubEventHandler::getType, Function.identity()));
-        }
+   public HubEventProcessor(KafkaClient kafkaClient, Set<HubEventHandler> hubEventHandlers,
+                             @Value("${kafka.topic.hub}") String hubTopic) {
+           this.hubTopic = hubTopic;
+           this.kafkaClient = kafkaClient;
+           this.handlerMap = hubEventHandlers.stream()
+                   .collect(Collectors.toMap(HubEventHandler::getType, Function.identity()));
+   }
 
-        @Override
-        public void run() {
-                Consumer<String, HubEventAvro> consumer = kafkaClient.getHubEventConsumer();
+    @Override
+    public void run() {
+            Consumer<String, HubEventAvro> consumer = kafkaClient.getHubEventConsumer();
 
-                try {
-                        Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
-                        consumer.subscribe(List.of(hubTopic));
-                        log.info("Подписка на HUB топик {} ", hubTopic);
+            try {
+                    Runtime.getRuntime().addShutdownHook(new Thread(consumer::wakeup));
+                    consumer.subscribe(List.of(hubTopic));
+                    log.info("Подписка на HUB топик {} ", hubTopic);
 
-                        while (true) {
-                                ConsumerRecords<String, HubEventAvro> records = consumer.poll(POLL_TIMEOUT);
-                                for (ConsumerRecord<String, HubEventAvro> record : records) {
-                                        log.info("topic = {}, partition = {}, offset = {}, record = {}",
-                                                record.topic(), record.partition(), record.offset(), record.value());
-                                        HubEventHandler handler = handlerMap.get(record.value().getPayload().getClass().getName());
-                                        if (handler != null) {
-                                                handler.handle(record.value());
-                                                log.info("Hub событие обработано.");
-                                        }
-                                }
-                          consumer.commitSync();
-                        }
+                    while (true) {
+                            ConsumerRecords<String, HubEventAvro> records = consumer.poll(POLL_TIMEOUT);
+                            if (!records.isEmpty()) {
+                                    try {
+                                            for (ConsumerRecord<String, HubEventAvro> record : records) {
+                                                    log.info("topic = {}, partition = {}, offset = {}, record = {}",
+                                                            record.topic(), record.partition(), record.offset(), record.value());
+                                                    HubEventHandler handler = handlerMap.get(record.value().getPayload().getClass().getName());
+                                                    if (handler != null) {
+                                                            handler.handle(record.value());
+                                                            log.info("Hub событие обработано.");
+                                                    }
+                                            }
+                                            consumer.commitSync();
+                                    } catch (Exception e) {
+                                            log.error("Ошибка обработки сообщений из топика {}: {}", hubTopic, e.getMessage(), e);
+                                    }
+                            }
+                    }
 
-                } catch (WakeupException ignored) {
-                } catch (Exception ex) {
-                        log.error("Ошибка чтения данных из топика {}", hubTopic);
-                        log.error(ex.getMessage(), ex);
-                } finally {
-                        try {
-                                consumer.commitSync();
-                        } finally {
-                                consumer.close(Duration.ofMillis(100));
-                        }
-                }
-        }
-
+            } catch (WakeupException ignored) {
+            } catch (Exception ex) {
+                    log.error("Ошибка чтения данных из топика {}", hubTopic);
+                    log.error(ex.getMessage(), ex);
+            } finally {
+                    try {
+                            consumer.commitSync();
+                    } finally {
+                            consumer.close(Duration.ofMillis(100));
+                    }
+            }
+    }
 }

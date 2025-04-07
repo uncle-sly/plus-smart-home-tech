@@ -41,18 +41,23 @@ public class SnapshotProcessor {
 
             while (true) {
                 ConsumerRecords<String, SensorsSnapshotAvro> records = consumer.poll(POLL_TIMEOUT);
-                for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
-                    log.info("topic = {}, partition = {}, offset = {}, record = {}",
-                            record.topic(), record.partition(), record.offset(), record.value());
-                    snapshotsEventHandler.handle(record.value());
-                    log.info("Hub событие обработано.");
+                if (!records.isEmpty()) {
+                    try {
+                        for (ConsumerRecord<String, SensorsSnapshotAvro> record : records) {
+                            log.info("topic = {}, partition = {}, offset = {}, record = {}",
+                                    record.topic(), record.partition(), record.offset(), record.value());
+                            snapshotsEventHandler.handle(record.value());
+                            log.info("Hub событие обработано.");
+                        }
+
+                        consumer.commitSync();
+                    } catch (Exception e) {
+                        log.error("Ошибка обработки сообщений из топика {}: {}", snapshotTopic, e.getMessage(), e);
+                    }
                 }
-                consumer.commitSync();
             }
 
-
-        } catch (
-                WakeupException ignored) {
+        } catch (WakeupException ignored) {
         } catch (Exception ex) {
             log.error("Ошибка чтения данных из топика {}", snapshotTopic);
             log.error(ex.getMessage(), ex);
@@ -64,5 +69,4 @@ public class SnapshotProcessor {
             }
         }
     }
-
 }
