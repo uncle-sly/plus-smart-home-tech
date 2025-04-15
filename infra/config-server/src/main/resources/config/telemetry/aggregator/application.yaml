@@ -1,0 +1,18 @@
+kafka:
+  topic:
+    hub: telemetry.hubs.v1
+    sensor: telemetry.sensors.v1
+    snapshot: telemetry.snapshots.v1
+  group:
+    id: telemetry.aggregator
+  bootstrap:
+    server: localhost:9092
+
+spring:
+  kafka:
+    consumer:
+      enable-auto-commit: false
+
+grpc:
+  server:
+    port: 9096

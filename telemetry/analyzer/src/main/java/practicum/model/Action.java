@@ -32,7 +32,7 @@ public class Action {
     @JoinColumn(name = "sensor_id")
     private Sensor sensor;
 
-    @ManyToMany(mappedBy = "actions")
+    @ManyToMany(mappedBy = "actions", fetch = FetchType.EAGER)
     private List<Scenario> scenarios;
 
 }

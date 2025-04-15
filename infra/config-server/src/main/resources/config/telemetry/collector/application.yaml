@@ -1,0 +1,21 @@
+spring:
+  application:
+    name: plus-smart-home-tech
+
+logging:
+  level:
+    org.apache.kafka.*: ERROR
+
+kafka:
+  topic:
+    hub: telemetry.hubs.v1
+    sensor: telemetry.sensors.v1
+  bootstrap:
+    server: localhost:9092
+
+grpc:
+  server:
+    port: 59091
+
+server:
+  port: 8081
