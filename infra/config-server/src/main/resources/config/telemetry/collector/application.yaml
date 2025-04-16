@@ -1,6 +1,6 @@
-spring:
-  application:
-    name: plus-smart-home-tech
+#spring:
+#  application:
+#    name: plus-smart-home-tech
 
 logging:
   level:
@@ -17,5 +17,6 @@ grpc:
   server:
     port: 59091
 
-server:
-  port: 8081
+#server:
+#  port: 0
+#  port: 8081
