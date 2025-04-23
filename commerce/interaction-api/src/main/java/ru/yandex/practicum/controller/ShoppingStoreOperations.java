@@ -11,7 +11,7 @@ import ru.yandex.practicum.dto.shoppingStore.SetProductQuantityStateRequest;
 import java.util.List;
 import java.util.UUID;
 
-//@RequestMapping("/api/v1/shopping-store")
+@RequestMapping("/api/v1/shopping-store")
 public interface ShoppingStoreOperations {
 
 

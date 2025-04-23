@@ -5,8 +5,6 @@ spring:
     username: analyzer
     password: analyzer
 
-#  application:
-#    name: shopping-store
   sql:
     init:
       mode: always

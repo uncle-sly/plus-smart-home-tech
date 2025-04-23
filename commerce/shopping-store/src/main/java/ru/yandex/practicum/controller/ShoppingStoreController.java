@@ -23,7 +23,7 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
     private final ShoppingStoreService shoppingStoreService;
 
     @Override
-    @GetMapping
+//    @GetMapping
     public List<ProductDto> getProductList(ProductCategory category, Pageable pageable) {
 
         log.info("GET /api/v1/shopping-store <--> Получение списка товаров по типу в пагинированном виде: " +
@@ -32,37 +32,36 @@ public class ShoppingStoreController implements ShoppingStoreOperations {
     }
 
     @Override
-    @PutMapping
+//    @PutMapping
     public ProductDto createProduct(ProductDto productDto) {
         log.info("PUT /api/v1/shopping-store <--> Создание нового товара в ассортименте:  productDto {}", productDto);
         return shoppingStoreService.createProduct(productDto);
     }
 
     @Override
-    @PostMapping
+//    @PostMapping
     public ProductDto updateProduct(ProductDto productDto) {
         log.info("POST /api/v1/shopping-store <--> Обновление товара в ассортименте: productDto {}", productDto);
         return shoppingStoreService.updateProduct(productDto);
     }
 
     @Override
-    @PostMapping("/removeProductFromStore")
+//    @PostMapping("/removeProductFromStore")
     public boolean removeProductFromStore(UUID productId) {
         log.info("POST /api/v1/shopping-store/removeProductFromStore <--> Удалить товар из ассортимента магазина.(Функция менеджеров): productId {}", productId);
         return shoppingStoreService.removeProductFromStore(productId);
-
     }
 
     // API вызывается со стороны склада
     @Override
-    @PostMapping("/quantityState")
+//    @PostMapping("/quantityState")
     public boolean setProductQuantityState(SetProductQuantityStateRequest setProductQuantityStateRequest) {
         log.info("POST /api/v1/shopping-store/quantityState <--> Установка статуса по товару: setProductQuantityStateRequest {}", setProductQuantityStateRequest);
         return shoppingStoreService.setProductQuantityState(setProductQuantityStateRequest);
     }
 
     @Override
-    @GetMapping("/{productId}")
+//    @GetMapping("/{productId}")
     public ProductDto getProduct(UUID productId) {
         log.info("GET /api/v1/shopping-store/{productId} <--> Получить сведения по товару из БД: productId {} ", productId);
         return shoppingStoreService.getProduct(productId);
