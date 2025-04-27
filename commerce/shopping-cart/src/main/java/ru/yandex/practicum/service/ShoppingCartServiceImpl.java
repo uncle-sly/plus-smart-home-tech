@@ -5,8 +5,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.yandex.practicum.FeignClient.WarehouseClient;
+import ru.yandex.practicum.dto.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.shoppingStore.SetProductQuantityStateRequest;
+import ru.yandex.practicum.exception.NoProductsInShoppingCartException;
 import ru.yandex.practicum.exception.NotAuthorizedUserException;
 import ru.yandex.practicum.exception.ShoppingCartStatusException;
 import ru.yandex.practicum.mapper.ShoppingCartMapper;
@@ -24,6 +26,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
     private final ShoppingCartRepository shoppingCartRepository;
     private final ShoppingCartMapper shoppingCartMapper;
+    private final WarehouseClient warehouseClient;
 
     @Override
     @Transactional(readOnly = true)
@@ -40,7 +43,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
         checkUser(userName);
         ShoppingCart shoppingCart = shoppingCartRepository.findByUserName(userName)
                 .orElseGet(() -> (shoppingCartRepository.save(createNewShoppingCart(userName))));
-
         checkCartStatus(shoppingCart);
 
         Map<UUID, Long> newProducts = shoppingCart.getProducts();
@@ -48,7 +50,7 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
 
         shoppingCart.setProducts(newProducts);
         // проверка на складе
-
+        warehouseClient.checkProductsQuantityInWarehouse(shoppingCartMapper.mapToShoppingCartDto(shoppingCart));
         return shoppingCartMapper.mapToShoppingCartDto(shoppingCartRepository.save(shoppingCart));
     }
 
@@ -66,15 +68,43 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
     @Override
     public ShoppingCartDto removeProductFromShoppingCart(String userName, Set<UUID> products) {
         log.info("removeProductFromShoppingCart: {} with products {}", userName, products);
+        checkUser(userName);
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserName(userName)
+                .orElseGet(() -> (shoppingCartRepository.save(createNewShoppingCart(userName))));
 
-        return null;
+        checkCartStatus(shoppingCart);
+
+        Map<UUID, Long> existedProducts = shoppingCart.getProducts();
+        products.forEach(id -> {
+            if (!existedProducts.containsKey(id)) {
+                throw new NoProductsInShoppingCartException(NoProductsInShoppingCartException.class, "Нет товара с id " + id + "в корзине.");
+            }
+            existedProducts.remove(id);
+        });
+
+//        shoppingCart.setProducts(existedProducts);
+        shoppingCartRepository.save(shoppingCart);
+        return shoppingCartMapper.mapToShoppingCartDto(shoppingCart);
     }
 
     @Override
-    public ShoppingCartDto changeQuantityInShoppingCart(String userName, SetProductQuantityStateRequest setProductQuantityStateRequest) {
-        log.info("setProductQuantityState: setProductQuantityStateRequest={}", setProductQuantityStateRequest);
+    public ShoppingCartDto changeQuantityInShoppingCart(String userName, ChangeProductQuantityRequest changeProductQuantityRequest) {
+        log.info("setProductQuantityState: setProductQuantityStateRequest={}", changeProductQuantityRequest);
+        checkUser(userName);
+        ShoppingCart shoppingCart = shoppingCartRepository.findByUserName(userName)
+                .orElseGet(() -> (shoppingCartRepository.save(createNewShoppingCart(userName))));
+        checkCartStatus(shoppingCart);
 
-        return null;
+        Map<UUID, Long> existedProducts = shoppingCart.getProducts();
+        if (!existedProducts.containsKey(changeProductQuantityRequest.getProductId())) {
+            throw new NoProductsInShoppingCartException(NoProductsInShoppingCartException.class, "Нет товара с id " + changeProductQuantityRequest.getProductId() + "в корзине.");
+        }
+        existedProducts.put(changeProductQuantityRequest.getProductId(), changeProductQuantityRequest.getNewQuantity());
+
+        //        проверка склада
+        warehouseClient.checkProductsQuantityInWarehouse(shoppingCartMapper.mapToShoppingCartDto(shoppingCart));
+
+        return shoppingCartMapper.mapToShoppingCartDto(shoppingCartRepository.save(shoppingCart));
     }
 
     private void checkUser(String userName) {

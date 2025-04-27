@@ -3,14 +3,13 @@ package ru.yandex.practicum.controller;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import org.springframework.web.bind.annotation.*;
+import ru.yandex.practicum.dto.shoppingCart.ChangeProductQuantityRequest;
 import ru.yandex.practicum.dto.shoppingCart.ShoppingCartDto;
-import ru.yandex.practicum.dto.shoppingStore.SetProductQuantityStateRequest;
 
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
 
-@RequestMapping("/api/v1/shopping-cart")
 public interface ShoppingCartOperations {
 
 
@@ -27,6 +26,6 @@ public interface ShoppingCartOperations {
     ShoppingCartDto removeProductFromShoppingCart(@RequestParam @NotNull String userName, @RequestBody @Valid @NotNull Set<UUID> products);
 
     @PostMapping("/change-quantity")
-    ShoppingCartDto changeQuantityInShoppingCart(@RequestParam @NotNull String userName, @RequestBody @Valid SetProductQuantityStateRequest setProductQuantityStateRequest);
+    ShoppingCartDto changeQuantityInShoppingCart(@RequestParam @NotNull String userName, @RequestBody @Valid ChangeProductQuantityRequest changeProductQuantityRequest);
 
 }
