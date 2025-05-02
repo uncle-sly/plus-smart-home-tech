@@ -21,7 +21,7 @@ public class ShoppingCart {
     @GeneratedValue(strategy = GenerationType.UUID)
     private UUID shoppingCartId;
 
-    @Column(nullable = false)
+    @Column(name = "username", nullable = false)
     private String userName;
 
     private Boolean active = true;

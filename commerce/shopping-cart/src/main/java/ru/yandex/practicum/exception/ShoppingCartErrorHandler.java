@@ -69,10 +69,6 @@ public class ShoppingCartErrorHandler {
     @ResponseStatus(HttpStatus.UNAUTHORIZED)
     public ErrorResponse onNotAuthorizedUserException(final NotAuthorizedUserException e) {
         log.error("NotAuthorizedUserException - 401: {}", e.getMessage(), e);
-//        StringWriter sw = new StringWriter();
-//        PrintWriter pw = new PrintWriter(sw);
-//        e.printStackTrace(pw);
-//        String stackTrace = sw.toString();
         return getErrorResponse(e, HttpStatus.UNAUTHORIZED);
     }
 
@@ -80,10 +76,6 @@ public class ShoppingCartErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAnyException(final RuntimeException e) {
         log.error("Error:500; {}", e.getMessage(), e);
-//        StringWriter sw = new StringWriter();
-//        PrintWriter pw = new PrintWriter(sw);
-//        e.printStackTrace(pw);
-//        String stackTrace = sw.toString();
         return getErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 

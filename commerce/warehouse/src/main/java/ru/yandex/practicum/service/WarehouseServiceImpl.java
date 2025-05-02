@@ -93,24 +93,30 @@ public class WarehouseServiceImpl implements WarehouseService {
                                                 Map<UUID,WarehouseProduct> warehouseProducts,
                                                 BookedProductsDto bookedProductsDto) {
 
-//        checkWarehouseProduct(shoppingCartProduct.getKey());
         WarehouseProduct warehouseProduct = warehouseProducts.get(shoppingCartProduct.getKey());
 
         if (warehouseProduct == null) {
             throw new NoSpecifiedProductInWarehouseException(NoSpecifiedProductInWarehouseException.class, "Продукта с UUID=" + shoppingCartProduct.getKey() + " нет на Складе.");
         }
 
-        if (warehouseProduct.getQuantity() >= shoppingCartProduct.getValue()) {
-            double weight = bookedProductsDto.getDeliveryWeight() + warehouseProduct.getWeight()*shoppingCartProduct.getValue();
-            bookedProductsDto.setDeliveryWeight(weight);
-            double volume = bookedProductsDto.getDeliveryVolume() +
-                    (warehouseProduct.getDepth()* warehouseProduct.getHeight()* warehouseProduct.getWidth())*shoppingCartProduct.getValue();
-            bookedProductsDto.setDeliveryVolume(volume);
-            if (warehouseProduct.getFragile()) {
-                bookedProductsDto.setFragile(true);
-            }
-        } else {
+        if (warehouseProduct.getQuantity() < shoppingCartProduct.getValue()) {
             throw new ProductInShoppingCartLowQuantityInWarehouse(ProductInShoppingCartLowQuantityInWarehouse.class, "Продукта с UUID=" + shoppingCartProduct.getKey() + " осталось мало на Складе.");
+        } else {
+            calculateDelivery(shoppingCartProduct, warehouseProduct, bookedProductsDto);
+        }
+    }
+
+    private void calculateDelivery(Map.Entry<UUID, Long> shoppingCartProduct,
+                                   WarehouseProduct warehouseProduct,
+                                   BookedProductsDto bookedProductsDto) {
+
+        double weight = bookedProductsDto.getDeliveryWeight() + warehouseProduct.getWeight() * shoppingCartProduct.getValue();
+        bookedProductsDto.setDeliveryWeight(weight);
+        double volume = bookedProductsDto.getDeliveryVolume() +
+                (warehouseProduct.getDepth() * warehouseProduct.getHeight() * warehouseProduct.getWidth()) * shoppingCartProduct.getValue();
+        bookedProductsDto.setDeliveryVolume(volume);
+        if (warehouseProduct.getFragile()) {
+            bookedProductsDto.setFragile(true);
         }
     }
 
