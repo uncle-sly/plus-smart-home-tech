@@ -16,3 +16,6 @@ spring:
 grpc:
   server:
     port: 9096
+
+server:
+  port: 0

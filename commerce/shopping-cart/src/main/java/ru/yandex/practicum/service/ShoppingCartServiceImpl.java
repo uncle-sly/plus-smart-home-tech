@@ -82,7 +82,6 @@ public class ShoppingCartServiceImpl implements ShoppingCartService {
             existedProducts.remove(id);
         });
 
-//        shoppingCart.setProducts(existedProducts);
         shoppingCartRepository.save(shoppingCart);
         return shoppingCartMapper.mapToShoppingCartDto(shoppingCart);
     }

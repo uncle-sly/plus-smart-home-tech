@@ -71,6 +71,7 @@ public class ShoppingStoreServiceImpl implements ShoppingStoreService {
     }
 
     @Override
+    @Transactional(readOnly = true)
     public ProductDto getProduct(UUID productId) {
         log.info("getProduct: productId={}", productId);
         Product product = productRepository.findById(productId)
