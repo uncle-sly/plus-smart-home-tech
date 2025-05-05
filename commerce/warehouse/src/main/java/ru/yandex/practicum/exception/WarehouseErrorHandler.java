@@ -86,6 +86,12 @@ public class WarehouseErrorHandler {
         return getErrorResponse(e, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(NoOrderFoundException.class)
+    @ResponseStatus(HttpStatus.NOT_FOUND)
+    public ErrorResponse onNoOrderFoundException(final NoOrderFoundException e) {
+        log.error("NoOrderFoundException - 404: {}", e.getMessage(), e);
+        return getErrorResponse(e, HttpStatus.NOT_FOUND);
+    }
 
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
