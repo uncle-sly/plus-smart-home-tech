@@ -65,6 +65,13 @@ public class OrderErrorHandler {
         return getErrorResponse(e, HttpStatus.NOT_FOUND);
     }
 
+    @ExceptionHandler(NotAuthorizedUserException.class)
+    @ResponseStatus(HttpStatus.UNAUTHORIZED)
+    public ErrorResponse onNotAuthorizedUserException(final NotAuthorizedUserException e) {
+        log.error("NotAuthorizedUserException - 401: {}", e.getMessage(), e);
+        return getErrorResponse(e, HttpStatus.UNAUTHORIZED);
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAnyException(final RuntimeException e) {
