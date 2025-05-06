@@ -72,6 +72,13 @@ public class ShoppingCartErrorHandler {
         return getErrorResponse(e, HttpStatus.UNAUTHORIZED);
     }
 
+    @ExceptionHandler(ShoppingCartStatusException.class)
+    @ResponseStatus(HttpStatus.FORBIDDEN)
+    public ErrorResponse onShoppingCartStatusException(final ShoppingCartStatusException e) {
+        log.error("ShoppingCartStatusException - 403: {}", e.getMessage(), e);
+        return getErrorResponse(e, HttpStatus.FORBIDDEN);
+    }
+
     @ExceptionHandler
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAnyException(final RuntimeException e) {

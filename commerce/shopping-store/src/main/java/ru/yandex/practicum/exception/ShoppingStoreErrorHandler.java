@@ -62,10 +62,6 @@ public class ShoppingStoreErrorHandler {
     @ResponseStatus(HttpStatus.NOT_FOUND)
     public ErrorResponse onProductNotFoundException(final ProductNotFoundException e) {
         log.error("ProductNotFoundException - 404: {}", e.getMessage(), e);
-//        StringWriter sw = new StringWriter();
-//        PrintWriter pw = new PrintWriter(sw);
-//        e.printStackTrace(pw);
-//        String stackTrace = sw.toString();
         return getErrorResponse(e, HttpStatus.NOT_FOUND);
     }
 
@@ -73,10 +69,6 @@ public class ShoppingStoreErrorHandler {
     @ResponseStatus(HttpStatus.INTERNAL_SERVER_ERROR)
     public ErrorResponse handleAnyException(final RuntimeException e) {
         log.error("Error:500; {}", e.getMessage(), e);
-//        StringWriter sw = new StringWriter();
-//        PrintWriter pw = new PrintWriter(sw);
-//        e.printStackTrace(pw);
-//        String stackTrace = sw.toString();
         return getErrorResponse(e, HttpStatus.INTERNAL_SERVER_ERROR);
     }
 
